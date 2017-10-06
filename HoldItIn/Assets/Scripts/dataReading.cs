@@ -2,19 +2,25 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 using System.IO.Ports;
 
 public class dataReading : MonoBehaviour {
 	SerialPort floraSP = new SerialPort ("COM9", 9600);
 	//SerialPort floraSP2 = new SerialPort ("COM9", 4800);
 
-	public Color blue;
+	public Color white;
 	public Color green;
 	public Color red;
 
+	public GameObject mrLeakNormalExpression;
+	public GameObject mrLeakAbnormalExpression;
+	public GameObject mrLeakFace;
+	public GameObject needle;
 	public Text switchText;
 	public Text bendText;
 	private Text rectalPressureText;
+	private SpriteRenderer mrLeakFaceSR;
 
 	private Camera cam;
 	private float bendSqueezePressure;
@@ -24,6 +30,8 @@ public class dataReading : MonoBehaviour {
 	public float leakThreshold = 0;
 	public float overPressureThreshold = 2000;
 	public float colorLerpDuration = 3f;
+	public float dangerZone = 1000;
+	public float needleTuringSpeed = 1f;
 
 
 	// Use this for initialization
@@ -39,8 +47,10 @@ public class dataReading : MonoBehaviour {
 		//bendText = GameObject.Find ("PressureBend").GetComponent<Text> ();
 		//switchText.text = "Pressure Switch Value: ";
 		//Debug.Log (switchText.text);
-		cam = GameObject.Find("Main Camera").GetComponent<Camera> ();
+		//cam = GameObject.Find("Main Camera").GetComponent<Camera> ();
 		rectalPressureText = GameObject.Find ("RectalPressure").GetComponent<Text> ();
+		mrLeakFaceSR = mrLeakFace.GetComponent<SpriteRenderer> ();
+		mrLeakAbnormalExpression.SetActive (false);
 
 	}
 	
@@ -62,11 +72,38 @@ public class dataReading : MonoBehaviour {
 		//bendText.text = "Pressure Bend Value: "; //+ floraSP2.ReadLine ();
 		float t = Mathf.PingPong(Time.time, colorLerpDuration)/colorLerpDuration;
 		if (rectalPressureValue < leakThreshold) {
-			cam.backgroundColor = Color.Lerp (cam.backgroundColor, green, t);
+			mrLeakFaceSR.color = Color.Lerp (mrLeakFaceSR.color, green, t);
+			mrLeakAbnormalExpression.SetActive (true);
 		} else if (rectalPressureValue > overPressureThreshold) {
-			cam.backgroundColor = Color.Lerp (cam.backgroundColor, red, t);
+			mrLeakFaceSR.color = Color.Lerp (mrLeakFaceSR.color, red, t);
+			mrLeakAbnormalExpression.SetActive (true);
 		} else {
-			cam.backgroundColor = Color.Lerp (cam.backgroundColor, blue, t);
+			mrLeakFaceSR.color = Color.Lerp (mrLeakFaceSR.color, white, t);
+			mrLeakNormalExpression.SetActive (true);
+			mrLeakAbnormalExpression.SetActive (false);
 		}
+
+		if (rectalPressureValue < (leakThreshold-dangerZone)) {
+			LoadLeakScene ();
+		}else if (rectalPressureValue > (overPressureThreshold+dangerZone))
+		{
+			LoadPoopScene ();
+		}
+
+		if (rectalPressureValue<700f) {
+			//needle.transform.rotation = Quaternion.Euler (0, 0, needle.transform.rotation.z + needleTuringSpeed);
+			needle.transform.Rotate(0,0,Time.deltaTime*needleTuringSpeed);
+		} else if (rectalPressureValue>700f) {
+			//needle.transform.rotation = Quaternion.Euler (0, 0, needle.transform.rotation.z - needleTuringSpeed);
+			needle.transform.Rotate(0,0,-Time.deltaTime*needleTuringSpeed);
+		}
+	}
+
+	void LoadLeakScene () {
+		SceneManager.LoadScene ("GameOver1", LoadSceneMode.Single);
+	}
+
+	void LoadPoopScene () {
+		SceneManager.LoadScene ("GameOver2", LoadSceneMode.Single);
 	}
 }
