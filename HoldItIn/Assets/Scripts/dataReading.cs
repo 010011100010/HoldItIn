@@ -58,8 +58,9 @@ public class dataReading : MonoBehaviour {
 	void Update () {
 		//print (Mathf.Round (Time.deltaTime));
 		bendSqueezePressure = float.Parse(floraSP.ReadLine ());
-		bendSqueezeValue = 900f - bendSqueezePressure;
+		bendSqueezeValue = 1500f - bendSqueezePressure;
 		rectalPressureValue = rectalPressureValue - Time.deltaTime*leakSpeed + bendSqueezeValue;
+		print (bendSqueezeValue);
 
 		try{
 			//print (floraSP.ReadLine());

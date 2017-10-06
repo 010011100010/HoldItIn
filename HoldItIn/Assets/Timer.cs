@@ -22,7 +22,7 @@ public class Timer :MonoBehaviour {
 
 		timer += Time.deltaTime;
 		seconds = Mathf.RoundToInt (timer);
-		timerText.text = "Rectal Pressure Regulated: " + seconds;
+		timerText.text = "Rectal Pressure Regulated: " + seconds	;
 
 	}
 }
